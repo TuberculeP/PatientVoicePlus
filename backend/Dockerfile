@@ -1,0 +1,7 @@
+FROM postgres:16-alpine
+
+ENV POSTGRES_DB=${DB_NAME:-patientvoice}
+ENV POSTGRES_USER=${DB_USER:-postgres}
+ENV POSTGRES_PASSWORD=${DB_PASS:-postgres}
+
+EXPOSE ${DB_PORT:-5432}
