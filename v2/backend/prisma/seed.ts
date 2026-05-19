@@ -25,21 +25,12 @@ async function main() {
 
   await prisma.question.createMany({
     data: [
-      { content: "A combien noteriez-vous l'accueil lors de votre arrivée au centre, sur une échelle de 1 à 5 ?", themeId: themeId('Accueil au centre'), isActive: true },
-      { content: "A combien noteriez-vous la clarté des informations fournies lors de l'admission, sur une échelle de 1 à 5 ?", themeId: themeId('Accueil au centre'), isActive: true },
-      { content: "A combien noteriez-vous le temps entre votre demande d'admission et votre entrée, sur une échelle de 1 à 5 ?", themeId: themeId('Accueil au centre'), isActive: true },
-      { content: 'A combien noteriez-vous la qualité globale des soins de rééducation, sur une échelle de 1 à 5 ?', themeId: themeId('Qualité des soins'), isActive: true },
-      { content: 'A combien noteriez-vous les compétences des thérapeutes (kinésithérapeutes, ergothérapeutes, etc.), sur une échelle de 1 à 5 ?', themeId: themeId('Qualité des soins'), isActive: true },
-      { content: "A combien noteriez-vous l'adaptation des exercices à votre état de santé, sur une échelle de 1 à 5 ?", themeId: themeId('Qualité des soins'), isActive: true },
-      { content: 'A combien noteriez-vous le suivi de votre progression par l\'équipe, sur une échelle de 1 à 5 ?', themeId: themeId('Qualité des soins'), isActive: true },
-      { content: 'A combien noteriez-vous la préparation à votre sortie (conseils, documents, suivi), sur une échelle de 1 à 5 ?', themeId: themeId('Qualité des soins'), isActive: true },
-      { content: 'A combien noteriez-vous la disponibilité du personnel soignant lorsque vous en aviez besoin, sur une échelle de 1 à 5 ?', themeId: themeId('Traitement de la part du personnel non-soignant'), isActive: true },
-      { content: "A combien noteriez-vous l'amabilité et courtoisie du personnel, sur une échelle de 1 à 5 ?", themeId: themeId('Traitement de la part du personnel non-soignant'), isActive: true },
-      { content: 'A combien noteriez-vous l\'écoute de vos besoins et prise en compte de vos remarques durant votre séjour, sur une échelle de 1 à 5 ?', themeId: themeId('Bien-être et sécurité'), isActive: true },
-      { content: 'A combien noteriez-vous le respect de votre dignité et de votre intimité, sur une échelle de 1 à 5 ?', themeId: themeId('Bien-être et sécurité'), isActive: true },
-      { content: 'A combien noteriez-vous le confort de votre chambre, sur une échelle de 1 à 5 ?', themeId: themeId('Propreté et confort'), isActive: true },
-      { content: 'A combien noteriez-vous la propreté de votre chambre et des locaux, sur une échelle de 1 à 5 ?', themeId: themeId('Propreté et confort'), isActive: true },
-      { content: 'A combien noteriez-vous la qualité des repas servis, sur une échelle de 1 à 5 ?', themeId: themeId('Alimentation'), isActive: true },
+      { content: 'Votre avis global sur l’accueil au centre', themeId: themeId('Accueil au centre'), isActive: true },
+      { content: 'Votre avis global sur la qualité des soins', themeId: themeId('Qualité des soins'), isActive: true },
+      { content: 'Votre avis global sur le personnel non-soignant', themeId: themeId('Traitement de la part du personnel non-soignant'), isActive: true },
+      { content: 'Votre avis global sur le bien-être et la sécurité', themeId: themeId('Bien-être et sécurité'), isActive: true },
+      { content: 'Votre avis global sur la propreté et le confort', themeId: themeId('Propreté et confort'), isActive: true },
+      { content: 'Votre avis global sur l’alimentation', themeId: themeId('Alimentation'), isActive: true },
     ],
   })
 
