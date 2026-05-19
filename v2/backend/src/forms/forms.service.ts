@@ -8,19 +8,21 @@ export class FormsService {
 
   async getThemesWithQuestions() {
     const themes = await this.prisma.theme.findMany({
+      orderBy: { id: 'asc' },
       include: {
         questions: {
           where: { isActive: true },
+          orderBy: { id: 'asc' },
+          take: 1,
         },
       },
     })
-    return themes.map((theme) => ({
-      name: theme.name,
-      questions: theme.questions.map((q) => ({
-        id: q.id.toString(),
-        name: q.content,
-      })),
-    }))
+    return themes
+      .filter((theme) => theme.questions.length > 0)
+      .map((theme) => ({
+        name: theme.name,
+        questionId: theme.questions[0].id.toString(),
+      }))
   }
 
   async submitForm(dto: SubmitFormDto) {
