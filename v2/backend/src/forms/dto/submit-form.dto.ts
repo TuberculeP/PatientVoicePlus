@@ -22,7 +22,7 @@ export class AnswerDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(255)
+  @MaxLength(4000)
   content?: string
 }
 

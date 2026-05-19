@@ -13,12 +13,8 @@ export type Center = {
   specialties: Specialty[]
 }
 
-export type Question = {
-  id: string
-  name: string
-}
-
+/** Un thème = une note 1–5 + un commentaire libre (une question en base) */
 export type Theme = {
   name: string
-  questions: Question[]
+  questionId: string
 }
