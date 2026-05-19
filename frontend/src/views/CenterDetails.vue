@@ -94,7 +94,7 @@ const center = ref({
 const mapCenter = ref<[number, number] | null>(null)
 
 const getCenterFromId = async (id: string) => {
-    const response = await fetch(`https://patientvoice-backend.onrender.com/centers/${id}`)
+    const response = await fetch(`http://localhost:10000/centers/${id}`)
     return response.json()
 }
 

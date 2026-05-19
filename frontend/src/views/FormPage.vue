@@ -79,7 +79,7 @@ const isSubmitting = ref(false);
 const centre = ref<Center>();
 
 const getCenterFromId = async (uuid: string): Promise<Center> => {
-    const response = await fetch(`https://patientvoice-backend.onrender.com/centers/${uuid}`);
+    const response = await fetch(`http://localhost:10000/centers/${uuid}`);
     const data = await response.json()
     centre.value = data
     return data;
@@ -106,7 +106,7 @@ const handleCommentChange = (questionId: number, comment: string) => {
 
 const themes = ref<Array<Theme>>([])
 const getThemes = async () => {
-    const response = await fetch(`https://patientvoice-backend.onrender.com/forms`)
+    const response = await fetch(`http://localhost:10000/forms`)
     const data = await response.json()
     themes.value = data
 }
@@ -125,7 +125,7 @@ const submit = async () => {
             }));
         console.log('Formatted Answers:', formattedAnswers);
 
-        const response = await fetch(`https://patientvoice-backend.onrender.com/forms`, {
+        const response = await fetch(`http://localhost:10000/forms`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

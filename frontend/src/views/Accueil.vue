@@ -117,7 +117,7 @@ interface Center {
 const centers = ref<Center[]>([])
 
 const getCenters = async () => {
-    const response = await fetch('https://patientvoice-backend.onrender.com/centers')
+    const response = await fetch('http://localhost:10000/centers')
     const data = await response.json()
 
     centers.value = data.map((center: CenterApi) => ({
