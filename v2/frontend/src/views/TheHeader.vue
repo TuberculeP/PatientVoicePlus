@@ -8,7 +8,7 @@ const menuOpen = ref(false)
   <header class="bg-white border-b border-gray-200">
     <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
       <RouterLink to="/" class="text-teal-700 font-bold text-xl tracking-tight">
-        PatientVoice
+       <img :src="'/logo.jpg'" alt="Logo">
       </RouterLink>
 
       <div class="hidden md:flex gap-6 text-sm font-medium">
@@ -73,3 +73,10 @@ const menuOpen = ref(false)
     </div>
   </header>
 </template>
+
+<style>
+img {
+  height: 100px;
+  border-radius: 10px;
+}
+</style>
