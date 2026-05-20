@@ -8,4 +8,3 @@ export class AdminLoginDto {
   @MinLength(1)
   password!: string;
 }
-

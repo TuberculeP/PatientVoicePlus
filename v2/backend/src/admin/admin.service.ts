@@ -18,7 +18,8 @@ function base64UrlEncode(buf: Buffer) {
 
 function base64UrlDecodeToBuffer(s: string) {
   const normalized = s.replaceAll('-', '+').replaceAll('_', '/');
-  const pad = normalized.length % 4 === 0 ? '' : '='.repeat(4 - (normalized.length % 4));
+  const pad =
+    normalized.length % 4 === 0 ? '' : '='.repeat(4 - (normalized.length % 4));
   return Buffer.from(normalized + pad, 'base64');
 }
 
@@ -69,15 +70,21 @@ export class AdminService {
       exp: now + this.getTtlSeconds(),
     };
 
-    const payloadB64 = base64UrlEncode(Buffer.from(JSON.stringify(payload), 'utf8'));
-    const sig = crypto.createHmac('sha256', this.getSecret()).update(payloadB64).digest();
+    const payloadB64 = base64UrlEncode(
+      Buffer.from(JSON.stringify(payload), 'utf8'),
+    );
+    const sig = crypto
+      .createHmac('sha256', this.getSecret())
+      .update(payloadB64)
+      .digest();
     const sigB64 = base64UrlEncode(sig);
     return `${payloadB64}.${sigB64}`;
   }
 
   verifyToken(token: string): TokenPayload {
     const [payloadB64, sigB64] = token.split('.');
-    if (!payloadB64 || !sigB64) throw new UnauthorizedException('Token invalide');
+    if (!payloadB64 || !sigB64)
+      throw new UnauthorizedException('Token invalide');
 
     const expectedSig = crypto
       .createHmac('sha256', this.getSecret())
@@ -90,17 +97,22 @@ export class AdminService {
 
     let payload: TokenPayload;
     try {
-      payload = JSON.parse(base64UrlDecodeToBuffer(payloadB64).toString('utf8')) as TokenPayload;
+      payload = JSON.parse(
+        base64UrlDecodeToBuffer(payloadB64).toString('utf8'),
+      ) as TokenPayload;
     } catch {
       throw new UnauthorizedException('Token invalide');
     }
 
     const now = Math.floor(Date.now() / 1000);
-    if (payload.sub !== 'admin' || typeof payload.exp !== 'number' || payload.exp <= now) {
+    if (
+      payload.sub !== 'admin' ||
+      typeof payload.exp !== 'number' ||
+      payload.exp <= now
+    ) {
       throw new UnauthorizedException('Token expiré');
     }
 
     return payload;
   }
 }
-
