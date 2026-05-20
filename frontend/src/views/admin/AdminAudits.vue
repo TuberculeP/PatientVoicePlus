@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-
-const ADMIN_TOKEN_KEY = 'admin_token'
+import { adminFetch } from '@/composables/useAdminApi'
+import { apiFetch } from '@/composables/useApi'
 
 type AuditStatus = 'DRAFT' | 'SENT' | 'DONE'
 
@@ -30,14 +30,10 @@ const showModal = ref(false)
 const selectedCenterId = ref('')
 const error = ref<string | null>(null)
 
-function authHeader() {
-  return { Authorization: `Bearer ${localStorage.getItem(ADMIN_TOKEN_KEY)}` }
-}
-
 async function fetchAudits() {
   loading.value = true
   try {
-    const res = await fetch('/api/admin/audits', { headers: authHeader() })
+    const res = await adminFetch('/audits')
     audits.value = await res.json()
   } finally {
     loading.value = false
@@ -45,7 +41,7 @@ async function fetchAudits() {
 }
 
 async function fetchCenters() {
-  const res = await fetch('/api/centers')
+  const res = await apiFetch('/centers')
   centers.value = await res.json()
 }
 
@@ -54,9 +50,8 @@ async function generateAudit() {
   generating.value = true
   error.value = null
   try {
-    const res = await fetch('/api/admin/audits/generate', {
+    const res = await adminFetch('/audits/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeader() },
       body: JSON.stringify({ centerId: selectedCenterId.value }),
     })
     if (!res.ok) {

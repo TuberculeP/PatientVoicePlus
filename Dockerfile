@@ -2,24 +2,37 @@
 FROM node:22-alpine AS frontend-builder
 WORKDIR /app
 
-COPY frontend/package*.json ./
-RUN NODE_ENV=development npm ci
+RUN corepack enable
 
-COPY frontend/ ./
-RUN npm run build-only
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY frontend/package.json ./frontend/package.json
+COPY backend/package.json ./backend/package.json
+
+RUN pnpm install --filter frontend --frozen-lockfile
+
+COPY frontend/ ./frontend/
+RUN pnpm --filter frontend run build-only
 
 # ── Stage 2: Build NestJS backend ────────────────────────────────────────────
 FROM node:22-alpine AS backend-builder
 WORKDIR /app
 
-COPY backend/package*.json ./
-RUN NODE_ENV=development npm ci
+RUN corepack enable
 
-COPY backend/ ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY backend/package.json ./backend/package.json
+COPY frontend/package.json ./frontend/package.json
 
-RUN npx prisma generate
-RUN npm run build
-RUN npm prune --omit=dev
+# Full install for build (dev + prod)
+RUN pnpm install --filter backend --frozen-lockfile
+
+COPY backend/ ./backend/
+
+RUN pnpm --filter backend run build
+
+# Switch to prod-only deps then regenerate prisma client
+RUN rm -rf node_modules && NODE_ENV=production pnpm install --filter backend --frozen-lockfile
+RUN pnpm --filter backend exec -- prisma generate
 
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 FROM node:22-alpine AS production
@@ -34,13 +47,13 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
 # Copy files with correct ownership
-COPY --from=backend-builder --chown=appuser:appgroup /app/dist ./dist
 COPY --from=backend-builder --chown=appuser:appgroup /app/node_modules ./node_modules
-COPY --from=backend-builder --chown=appuser:appgroup /app/prisma ./prisma
-COPY --from=backend-builder --chown=appuser:appgroup /app/package.json ./package.json
+COPY --from=backend-builder --chown=appuser:appgroup /app/backend/dist ./dist
+COPY --from=backend-builder --chown=appuser:appgroup /app/backend/prisma ./prisma
+COPY --from=backend-builder --chown=appuser:appgroup /app/backend/package.json ./package.json
 
 # Vue build output — join(__dirname='dist/src', '../..', 'frontend-dist') = /app/frontend-dist
-COPY --from=frontend-builder --chown=appuser:appgroup /app/dist ./frontend-dist
+COPY --from=frontend-builder --chown=appuser:appgroup /app/frontend/dist ./frontend-dist
 
 COPY --chown=appuser:appgroup entrypoint.sh ./entrypoint.sh
 RUN chmod +x entrypoint.sh

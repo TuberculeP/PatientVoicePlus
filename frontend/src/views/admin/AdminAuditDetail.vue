@@ -4,8 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import { Markdown } from 'tiptap-markdown'
-
-const ADMIN_TOKEN_KEY = 'admin_token'
+import { adminFetch } from '@/composables/useAdminApi'
 
 type AuditStatus = 'DRAFT' | 'SENT' | 'DONE'
 
@@ -26,10 +25,6 @@ const loading = ref(true)
 const saving = ref(false)
 const savedAt = ref<string | null>(null)
 
-function authHeader() {
-  return { Authorization: `Bearer ${localStorage.getItem(ADMIN_TOKEN_KEY)}` }
-}
-
 const editor = useEditor({
   extensions: [
     StarterKit,
@@ -46,9 +41,7 @@ const editor = useEditor({
 async function fetchAudit() {
   loading.value = true
   try {
-    const res = await fetch(`/api/admin/audits/${route.params.id}`, {
-      headers: authHeader(),
-    })
+    const res = await adminFetch(`/audits/${route.params.id}`)
     if (!res.ok) {
       await router.replace({ name: 'admin-audits' })
       return
@@ -65,10 +58,9 @@ async function saveContent() {
   if (!editor.value || !audit.value) return
   saving.value = true
   try {
-    const content = editor.value.storage.markdown.getMarkdown()
-    await fetch(`/api/admin/audits/${audit.value.id}`, {
+    const content = (editor.value.storage as unknown as { markdown: { getMarkdown(): string } }).markdown.getMarkdown()
+    await adminFetch(`/audits/${audit.value.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', ...authHeader() },
       body: JSON.stringify({ content }),
     })
     savedAt.value = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
@@ -79,9 +71,8 @@ async function saveContent() {
 
 async function setStatus(status: AuditStatus) {
   if (!audit.value || audit.value.status === status) return
-  const res = await fetch(`/api/admin/audits/${audit.value.id}`, {
+  const res = await adminFetch(`/audits/${audit.value.id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...authHeader() },
     body: JSON.stringify({ status }),
   })
   if (res.ok) {

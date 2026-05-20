@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import type { Center } from '../types'
+import { apiFetch } from '@/composables/useApi'
 
 const centers = ref<Center[]>([])
 const loading = ref(true)
@@ -8,7 +9,7 @@ const error = ref(false)
 
 onMounted(async () => {
   try {
-    const res = await fetch('/api/centers')
+    const res = await apiFetch('/centers')
     if (!res.ok) throw new Error()
     centers.value = await res.json()
   } catch {

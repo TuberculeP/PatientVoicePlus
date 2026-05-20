@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -23,7 +24,7 @@ export class AuditsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.audits.findOne(id);
   }
 
@@ -33,7 +34,7 @@ export class AuditsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateAuditDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateAuditDto) {
     return this.audits.update(id, dto);
   }
 }

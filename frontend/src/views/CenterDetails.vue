@@ -3,6 +3,7 @@ import { LMap, LMarker, LTileLayer } from '@vue-leaflet/vue-leaflet'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import type { Center } from '../types'
+import { apiFetch } from '@/composables/useApi'
 
 const route = useRoute()
 const center = ref<Center | null>(null)
@@ -13,7 +14,7 @@ const zoom = ref(13)
 
 onMounted(async () => {
   try {
-    const res = await fetch(`/api/centers/${route.params.id}`)
+    const res = await apiFetch(`/centers/${route.params.id}`)
     if (!res.ok) throw new Error()
     center.value = await res.json()
 

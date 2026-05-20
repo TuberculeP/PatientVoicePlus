@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AdminGuard } from './admin.guard.js';
 import { AdminLoginDto } from './dto/admin-login.dto.js';
 import { AdminService } from './admin.service.js';
@@ -7,6 +8,7 @@ import { AdminService } from './admin.service.js';
 export class AdminController {
   constructor(private readonly admin: AdminService) {}
 
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post('login')
   login(@Body() dto: AdminLoginDto) {
     return this.admin.login(dto.username, dto.password);

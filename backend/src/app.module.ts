@@ -16,6 +16,7 @@ import { AuditsModule } from './audits/audits.module.js';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['../.env', '.env'],
       validationSchema: Joi.object({
         DATABASE_URL: Joi.string().required(),
         PORT: Joi.number().default(3000),

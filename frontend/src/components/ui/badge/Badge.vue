@@ -12,6 +12,7 @@ const props = withDefaults(
   }>(),
   {
     variant: 'default',
+    class: '',
   },
 )
 </script>
