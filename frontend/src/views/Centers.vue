@@ -1,62 +1,71 @@
-<template>
-  <div class="p-8 bg-gray-50 min-h-screen">
-    <div class="mb-10 text-center">
-      <h2 class="text-4xl font-bold text-gray-900 mb-4" aria-label="Parcourir les centres">
-        Parcourir les centres
-      </h2>
-      <p class="text-xl text-gray-500">
-        Et faire entendre votre voix..
-      </p>
-    </div>
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import type { Center } from '../types'
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-      <CenterCard
+const centers = ref<Center[]>([])
+const loading = ref(true)
+const error = ref(false)
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/api/centers')
+    if (!res.ok) throw new Error()
+    centers.value = await res.json()
+  } catch {
+    error.value = true
+  } finally {
+    loading.value = false
+  }
+})
+</script>
+
+<template>
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">
+      Centres de rééducation
+    </h1>
+    <p class="text-gray-500 mb-10">
+      Trouvez un centre et partagez votre expérience.
+    </p>
+
+    <div
+      v-if="loading"
+      class="text-gray-500"
+    >
+      Chargement…
+    </div>
+    <div
+      v-else-if="error"
+      class="text-red-600"
+    >
+      Impossible de charger les centres.
+    </div>
+    <div
+      v-else-if="centers.length === 0"
+      class="text-gray-500"
+    >
+      Aucun centre disponible.
+    </div>
+    <div
+      v-else
+      class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+    >
+      <RouterLink
         v-for="center in centers"
         :key="center.id"
-        :id="center.id"
-        :name="center.name"
-        :address="center.address"
-        :cityZip="center.cityZip"
-        :image="center.image"
-      />
+        :to="`/center/${center.id}`"
+        class="block bg-white rounded-xl border border-gray-200 p-5 hover:border-teal-400 hover:shadow-sm transition"
+      >
+        <h2 class="font-semibold text-gray-800 mb-1">
+          {{ center.name }}
+        </h2>
+        <p class="text-sm text-gray-500 mb-3">
+          {{ center.address }}, {{ center.postalCode }} {{ center.city }}
+        </p>
+        <p class="text-xs text-teal-700 font-medium">
+          Voir le centre →
+        </p>
+      </RouterLink>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import CenterCard from './components/CenterCard.vue'
-
-interface CenterApi {
-  id: string
-  name: string
-  address: string
-  city: string
-  postal_code: string
-}
-
-interface Center {
-  id: string
-  name: string
-  address: string
-  cityZip: string
-  image: string
-}
-
-const centers = ref<Center[]>([])
-
-const getCenters = async () => {
-  const response = await fetch('http://localhost:10000/centers')
-  const data: CenterApi[] = await response.json()
-
-  centers.value = data.map(center => ({
-    id: center.id,
-    name: center.name,
-    address: center.address,
-    cityZip: `${center.postal_code} ${center.city}`,
-    image: 'https://picsum.photos/320/140'
-  }))
-}
-
-onMounted(getCenters)
-</script>
