@@ -67,8 +67,16 @@ function headerId(themeName: string) {
   return `theme-header-${themeName.replace(/\s+/g, '-').toLowerCase()}`
 }
 
+const NO_RATING_VALUE = '0'
+
+function isThemeAnswered(theme: Theme) {
+  const a = getAnswer(theme.questionId)
+  if (theme.commentOnly) return a.content.trim() !== ''
+  return a.value !== ''
+}
+
 const answeredCount = computed(() =>
-  themes.value.filter((t) => getAnswer(t.questionId).value !== '').length,
+  themes.value.filter((t) => isThemeAnswered(t)).length,
 )
 
 onMounted(async () => {
@@ -91,6 +99,14 @@ async function submit() {
   const payload = themes.value
     .map((theme) => {
       const a = getAnswer(theme.questionId)
+      if (theme.commentOnly) {
+        if (!a.content.trim()) return null
+        return {
+          question_id: parseInt(theme.questionId, 10),
+          value: NO_RATING_VALUE,
+          content: a.content.trim(),
+        }
+      }
       if (a.value === '') return null
       return {
         question_id: parseInt(theme.questionId, 10),
@@ -172,7 +188,8 @@ async function submit() {
       </p>
       <p class="text-sm text-gray-600 mb-8">
         Ouvrez chaque thème pour noter de 1 à 5 et, si vous le souhaitez, laisser un
-        commentaire libre. Vous pouvez ne répondre qu’aux thèmes qui vous concernent.
+        commentaire. La section « Autre aspect » permet de partager librement tout autre
+        sujet, sans note. Vous pouvez ne répondre qu’aux thèmes qui vous concernent.
       </p>
 
       <form
@@ -211,54 +228,77 @@ async function submit() {
             :aria-labelledby="headerId(theme.name)"
             class="px-5 pb-5 pt-1 border-t border-gray-100"
           >
-            <fieldset class="border-0 p-0 m-0">
-              <legend class="sr-only">
-                Note pour {{ theme.name }}
-              </legend>
-              <p class="text-sm text-gray-600 mb-3">
-                De 1 (très insatisfait) à 5 (très satisfait)
+            <template v-if="theme.commentOnly">
+              <p class="text-sm text-gray-600 mb-4">
+                Décrivez ici tout autre aspect de votre séjour qui n’a pas été couvert
+                ci-dessus.
               </p>
-              <div
-                class="flex flex-wrap gap-2 mb-5"
-                role="radiogroup"
-                :aria-label="`Note pour ${theme.name}`"
+              <label
+                :for="`comment-${theme.questionId}`"
+                class="block text-sm font-medium text-gray-700 mb-2"
               >
-                <button
-                  v-for="n in [1, 2, 3, 4, 5]"
-                  :key="n"
-                  type="button"
-                  role="radio"
-                  :aria-checked="isRatingSelected(theme.questionId, n)"
-                  class="flex-1 min-w-[4.5rem] flex flex-col items-center gap-1 rounded-lg border-2 px-2 py-3 text-center text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
-                  :class="
-                    isRatingSelected(theme.questionId, n)
-                      ? 'border-teal-700 bg-teal-50 text-teal-900'
-                      : 'border-gray-200 text-gray-800 hover:border-teal-400'
-                  "
-                  @click="toggleRating(theme.questionId, n)"
-                >
-                  <span class="text-lg font-bold">{{ n }}</span>
-                  <span class="text-xs text-gray-600 leading-tight">{{
-                    RATING_LABELS[n]
-                  }}</span>
-                </button>
-              </div>
-            </fieldset>
+                Votre commentaire
+              </label>
+              <textarea
+                :id="`comment-${theme.questionId}`"
+                v-model="getAnswer(theme.questionId).content"
+                rows="5"
+                maxlength="4000"
+                placeholder="Ex. activités, visites, équipements, suggestions…"
+                class="textarea-comment w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 resize-y min-h-[8rem]"
+              />
+            </template>
 
-            <label
-              :for="`comment-${theme.questionId}`"
-              class="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Votre avis en quelques mots (facultatif)
-            </label>
-            <textarea
-              :id="`comment-${theme.questionId}`"
-              v-model="getAnswer(theme.questionId).content"
-              rows="4"
-              maxlength="4000"
-              placeholder="Partagez librement votre expérience sur ce thème…"
-              class="textarea-comment w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 resize-y min-h-[6rem]"
-            />
+            <template v-else>
+              <fieldset class="border-0 p-0 m-0">
+                <legend class="sr-only">
+                  Note pour {{ theme.name }}
+                </legend>
+                <p class="text-sm text-gray-600 mb-3">
+                  De 1 (très insatisfait) à 5 (très satisfait)
+                </p>
+                <div
+                  class="flex flex-wrap gap-2 mb-5"
+                  role="radiogroup"
+                  :aria-label="`Note pour ${theme.name}`"
+                >
+                  <button
+                    v-for="n in [1, 2, 3, 4, 5]"
+                    :key="n"
+                    type="button"
+                    role="radio"
+                    :aria-checked="isRatingSelected(theme.questionId, n)"
+                    class="flex-1 min-w-[4.5rem] flex flex-col items-center gap-1 rounded-lg border-2 px-2 py-3 text-center text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+                    :class="
+                      isRatingSelected(theme.questionId, n)
+                        ? 'border-teal-700 bg-teal-50 text-teal-900'
+                        : 'border-gray-200 text-gray-800 hover:border-teal-400'
+                    "
+                    @click="toggleRating(theme.questionId, n)"
+                  >
+                    <span class="text-lg font-bold">{{ n }}</span>
+                    <span class="text-xs text-gray-600 leading-tight">{{
+                      RATING_LABELS[n]
+                    }}</span>
+                  </button>
+                </div>
+              </fieldset>
+
+              <label
+                :for="`comment-${theme.questionId}`"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Votre avis en quelques mots (facultatif)
+              </label>
+              <textarea
+                :id="`comment-${theme.questionId}`"
+                v-model="getAnswer(theme.questionId).content"
+                rows="4"
+                maxlength="4000"
+                placeholder="Partagez librement votre expérience sur ce thème…"
+                class="textarea-comment w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 resize-y min-h-[6rem]"
+              />
+            </template>
           </div>
         </div>
 
