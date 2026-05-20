@@ -27,6 +27,7 @@ model Question {
   theme     Theme?   @relation(fields: [themeId], references: [id])
   answers   Answer[]
 
+  @@index([themeId])
   @@map("questions")
 }
 
@@ -78,6 +79,7 @@ model Form {
   center    Center    @relation(fields: [centerId], references: [id], onDelete: Cascade)
   answers   Answer[]
 
+  @@index([centerId])
   @@map("forms")
 }
 
@@ -92,6 +94,8 @@ model Answer {
   form       Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
+  @@index([formId])
+  @@index([questionId])
   @@map("answers")
 }
 
@@ -113,5 +117,6 @@ model Audit {
   updatedAt DateTime    @updatedAt
   center    Center      @relation(fields: [centerId], references: [id], onDelete: Cascade)
 
+  @@index([centerId])
   @@map("audits")
 }

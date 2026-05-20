@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-echo "Applying database schema..."
-node_modules/.bin/prisma db push
+echo "Running database migrations..."
+node_modules/.bin/prisma migrate deploy
 
 echo "Seeding database if empty..."
 node_modules/.bin/prisma db seed

@@ -15,8 +15,7 @@ import AdminEstablishmentCreate from '../views/admin/establishments/AdminEstabli
 import AdminEstablishmentEdit from '../views/admin/establishments/AdminEstablishmentEdit.vue'
 import AdminReturnsList from '../views/admin/returns/AdminReturnsList.vue'
 import AdminReturnDetail from '../views/admin/returns/AdminReturnDetail.vue'
-
-const ADMIN_TOKEN_KEY = 'admin_token'
+import { ADMIN_TOKEN_KEY } from '@/lib/constants'
 
 async function isAdminAuthed() {
   const token = localStorage.getItem(ADMIN_TOKEN_KEY)

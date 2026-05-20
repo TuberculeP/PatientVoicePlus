@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
-const ADMIN_TOKEN_KEY = 'admin_token'
+import { ADMIN_TOKEN_KEY } from '@/lib/constants'
+import { apiFetch } from '@/composables/useApi'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,7 +21,7 @@ async function submit() {
   loading.value = true
   error.value = null
   try {
-    const res = await fetch('/api/admin/login', {
+    const res = await apiFetch('/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: username.value, password: password.value }),

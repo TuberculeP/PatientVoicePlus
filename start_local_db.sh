@@ -1,4 +1,14 @@
 #!/bin/sh
-docker compose -f docker-compose.yml -f docker-compose.local.yml up db --build --force-recreate -d
-cd backend
-npx prisma db push
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/docker-compose.local.yml" up db --force-recreate -d
+
+echo "Waiting for database to be ready..."
+until docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/docker-compose.local.yml" ps db | grep -q "healthy"; do
+  sleep 1
+done
+
+echo "Applying schema..."
+pnpm --filter backend db:push

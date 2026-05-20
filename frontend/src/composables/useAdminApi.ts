@@ -1,4 +1,4 @@
-const ADMIN_TOKEN_KEY = 'admin_token'
+import { ADMIN_TOKEN_KEY } from '@/lib/constants'
 
 export async function adminFetch(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem(ADMIN_TOKEN_KEY)

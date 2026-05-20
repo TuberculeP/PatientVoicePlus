@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { Center, Theme } from '../types'
+import { apiFetch } from '@/composables/useApi'
 
 const route = useRoute()
 const router = useRouter()
@@ -142,8 +143,8 @@ function backToEdit() {
 onMounted(async () => {
   try {
     const [centerRes, formsRes] = await Promise.all([
-      fetch(`/api/centers/${route.params.id}`),
-      fetch('/api/forms'),
+      apiFetch(`/centers/${route.params.id}`),
+      apiFetch('/forms'),
     ])
     if (!centerRes.ok || !formsRes.ok) throw new Error()
     center.value = await centerRes.json()
@@ -161,7 +162,7 @@ async function submit() {
 
   submitting.value = true
   try {
-    const res = await fetch('/api/forms', {
+    const res = await apiFetch('/forms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ center_id: route.params.id, answers: payload }),
