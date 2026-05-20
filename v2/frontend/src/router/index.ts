@@ -8,6 +8,9 @@ import Contact from '../views/Contact.vue'
 import FormPage from '../views/FormPage.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
+import AdminEstablishmentsList from '../views/admin/establishments/AdminEstablishmentsList.vue'
+import AdminEstablishmentCreate from '../views/admin/establishments/AdminEstablishmentCreate.vue'
+import AdminEstablishmentEdit from '../views/admin/establishments/AdminEstablishmentEdit.vue'
 
 const ADMIN_TOKEN_KEY = 'admin_token'
 
@@ -53,6 +56,21 @@ const router = createRouter({
       meta: { requiresAdmin: true },
       children: [
         { path: '', name: 'admin', component: AdminHome },
+        {
+          path: 'establishments',
+          name: 'admin-establishments',
+          component: AdminEstablishmentsList,
+        },
+        {
+          path: 'establishments/new',
+          name: 'admin-establishment-create',
+          component: AdminEstablishmentCreate,
+        },
+        {
+          path: 'establishments/:id/edit',
+          name: 'admin-establishment-edit',
+          component: AdminEstablishmentEdit,
+        },
       ],
     },
   ],
@@ -60,7 +78,8 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  if (to.meta?.requiresAdmin) {
+  const requiresAdmin = to.matched.some((r) => r.meta.requiresAdmin)
+  if (requiresAdmin) {
     const ok = await isAdminAuthed()
     if (!ok) return { name: 'admin-login', query: { redirect: to.fullPath } }
   }
