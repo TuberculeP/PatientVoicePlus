@@ -12,6 +12,7 @@ const loading = ref(true)
 const error = ref(false)
 const submitting = ref(false)
 const submitted = ref(false)
+const showRecap = ref(false)
 
 /** questionId → { note 1–5, commentaire libre } */
 const answers = ref<Record<string, { value: string; content: string }>>({})
@@ -79,24 +80,35 @@ const answeredCount = computed(() =>
   themes.value.filter((t) => isThemeAnswered(t)).length,
 )
 
-onMounted(async () => {
-  try {
-    const [centerRes, formsRes] = await Promise.all([
-      fetch(`/api/centers/${route.params.id}`),
-      fetch('/api/forms'),
-    ])
-    if (!centerRes.ok || !formsRes.ok) throw new Error()
-    center.value = await centerRes.json()
-    themes.value = await formsRes.json()
-  } catch {
-    error.value = true
-  } finally {
-    loading.value = false
-  }
-})
+type RecapItem = {
+  themeName: string
+  commentOnly: boolean
+  ratingValue?: string
+  ratingLabel?: string
+  comment?: string
+}
 
-async function submit() {
-  const payload = themes.value
+const recapItems = computed((): RecapItem[] =>
+  themes.value
+    .filter((t) => isThemeAnswered(t))
+    .map((theme) => {
+      const a = getAnswer(theme.questionId)
+      const n = parseInt(a.value, 10)
+      return {
+        themeName: theme.name,
+        commentOnly: !!theme.commentOnly,
+        ratingValue: theme.commentOnly ? undefined : a.value,
+        ratingLabel:
+          !theme.commentOnly && n >= 1 && n <= 5
+            ? `${a.value} — ${RATING_LABELS[n]}`
+            : undefined,
+        comment: a.content.trim() || undefined,
+      }
+    }),
+)
+
+function buildPayload() {
+  return themes.value
     .map((theme) => {
       const a = getAnswer(theme.questionId)
       if (theme.commentOnly) {
@@ -115,7 +127,36 @@ async function submit() {
       }
     })
     .filter((item): item is NonNullable<typeof item> => item !== null)
+}
 
+function openRecap() {
+  if (answeredCount.value === 0) return
+  showRecap.value = true
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function backToEdit() {
+  showRecap.value = false
+}
+
+onMounted(async () => {
+  try {
+    const [centerRes, formsRes] = await Promise.all([
+      fetch(`/api/centers/${route.params.id}`),
+      fetch('/api/forms'),
+    ])
+    if (!centerRes.ok || !formsRes.ok) throw new Error()
+    center.value = await centerRes.json()
+    themes.value = await formsRes.json()
+  } catch {
+    error.value = true
+  } finally {
+    loading.value = false
+  }
+})
+
+async function submit() {
+  const payload = buildPayload()
   if (payload.length === 0) return
 
   submitting.value = true
@@ -177,25 +218,96 @@ async function submit() {
         ← Retour au centre
       </RouterLink>
 
-      <h1 class="text-3xl font-bold text-gray-800 mb-2">
-        Votre avis
-      </h1>
-      <p
-        v-if="center"
-        class="text-gray-500 mb-2"
-      >
-        {{ center.name }}
-      </p>
-      <p class="text-sm text-gray-600 mb-8">
-        Ouvrez chaque thème pour noter de 1 à 5 et, si vous le souhaitez, laisser un
-        commentaire. La section « Autre aspect » permet de partager librement tout autre
-        sujet, sans note. Vous pouvez ne répondre qu’aux thèmes qui vous concernent.
-      </p>
+      <!-- Récapitulatif avant envoi définitif -->
+      <div v-if="showRecap">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+          Vérifiez votre avis
+        </h1>
+        <p
+          v-if="center"
+          class="text-gray-500 mb-2"
+        >
+          {{ center.name }}
+        </p>
+        <p class="text-sm text-gray-600 mb-6">
+          Relisez le résumé ci-dessous. Si tout est correct, confirmez l’envoi. Sinon,
+          modifiez vos réponses.
+        </p>
 
-      <form
-        class="space-y-3"
-        @submit.prevent="submit"
-      >
+        <ul class="space-y-4 mb-8">
+          <li
+            v-for="item in recapItems"
+            :key="item.themeName"
+            class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm"
+          >
+            <h2 class="font-semibold text-gray-900 mb-2">
+              {{ item.themeName }}
+            </h2>
+            <p
+              v-if="item.ratingLabel"
+              class="text-sm text-teal-800 font-medium mb-2"
+            >
+              Note : {{ item.ratingLabel }}
+            </p>
+            <p
+              v-if="item.comment"
+              class="text-sm text-gray-700 whitespace-pre-wrap break-words"
+            >
+              <span
+                v-if="!item.commentOnly"
+                class="font-medium text-gray-600"
+              >Commentaire : </span>{{ item.comment }}
+            </p>
+            <p
+              v-else-if="!item.commentOnly"
+              class="text-sm text-gray-400 italic"
+            >
+              Aucun commentaire
+            </p>
+          </li>
+        </ul>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            class="flex-1 border border-gray-300 text-gray-800 font-semibold py-3 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+            :disabled="submitting"
+            @click="backToEdit"
+          >
+            Modifier mon avis
+          </button>
+          <button
+            type="button"
+            class="flex-1 bg-teal-700 text-white font-semibold py-3 rounded-lg hover:bg-teal-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+            :disabled="submitting"
+            @click="submit"
+          >
+            {{ submitting ? 'Envoi…' : 'Confirmer et envoyer' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Formulaire -->
+      <div v-else>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+          Votre avis
+        </h1>
+        <p
+          v-if="center"
+          class="text-gray-500 mb-2"
+        >
+          {{ center.name }}
+        </p>
+        <p class="text-sm text-gray-600 mb-8">
+          Ouvrez chaque thème pour noter de 1 à 5 et, si vous le souhaitez, laisser un
+          commentaire. La section « Autre aspect » permet de partager librement tout autre
+          sujet, sans note. Vous pouvez ne répondre qu’aux thèmes qui vous concernent.
+        </p>
+
+        <form
+          class="space-y-3"
+          @submit.prevent="openRecap"
+        >
         <div
           v-for="theme in themes"
           :key="theme.name"
@@ -308,12 +420,13 @@ async function submit() {
 
         <button
           type="submit"
-          :disabled="submitting || answeredCount === 0"
+          :disabled="answeredCount === 0"
           class="w-full bg-teal-700 text-white font-semibold py-3 rounded-lg hover:bg-teal-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
         >
-          {{ submitting ? 'Envoi…' : 'Envoyer mon avis' }}
+          Voir le récapitulatif
         </button>
       </form>
+      </div>
     </template>
   </div>
 </template>
