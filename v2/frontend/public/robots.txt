@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /dashboard/
+Disallow: /profil/
+Disallow: /api/
+
+Sitemap: https://patientvoiceplus.com/sitemap.xml
