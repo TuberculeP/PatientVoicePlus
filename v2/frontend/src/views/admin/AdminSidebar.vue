@@ -1,16 +1,24 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const ADMIN_TOKEN_KEY = 'admin_token'
 
+const route = useRoute()
 const router = useRouter()
 const menuOpen = ref(false)
 
 const navItems = [
   { to: '/admin', label: 'Tableau de bord', exact: true },
   { to: '/admin/audits', label: 'Audits' },
+  { to: '/admin/establishments', label: 'Établissements', exact: false },
+  { to: '/admin/returns', label: 'Retours', exact: false },
 ]
+
+function isNavActive(item: { to: string; exact?: boolean }) {
+  if (item.exact) return route.path === item.to
+  return route.path === item.to || route.path.startsWith(`${item.to}/`)
+}
 
 async function logout() {
   localStorage.removeItem(ADMIN_TOKEN_KEY)
@@ -105,9 +113,12 @@ function closeMenu() {
         v-for="item in navItems"
         :key="item.to"
         :to="item.to"
-        class="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-teal-700 hover:bg-gray-50 transition-colors"
-        active-class="!text-teal-700 bg-teal-50"
-        :exact-active-class="item.exact ? '!text-teal-700 bg-teal-50' : undefined"
+        class="block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
+        :class="
+          isNavActive(item)
+            ? 'text-teal-700 bg-teal-50'
+            : 'text-gray-600 hover:text-teal-700 hover:bg-gray-50'
+        "
         @click="closeMenu"
       >
         {{ item.label }}
