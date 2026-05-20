@@ -6,7 +6,9 @@ function averageRating(answers: { value: string }[]) {
     .map((a) => parseInt(a.value, 10))
     .filter((n) => n >= 1 && n <= 5);
   if (ratings.length === 0) return null;
-  return Math.round((ratings.reduce((s, n) => s + n, 0) / ratings.length) * 10) / 10;
+  return (
+    Math.round((ratings.reduce((s, n) => s + n, 0) / ratings.length) * 10) / 10
+  );
 }
 
 function mapFormListItem(form: {

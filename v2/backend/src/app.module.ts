@@ -10,6 +10,7 @@ import { FormsModule } from './forms/forms.module.js';
 import { HealthController } from './health/health.controller.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { AdminModule } from './admin/admin.module.js';
+import { AuditsModule } from './audits/audits.module.js';
 
 @Module({
   imports: [
@@ -26,7 +27,10 @@ import { AdminModule } from './admin/admin.module.js';
         ADMIN_USERNAME: Joi.string().default('admin'),
         ADMIN_PASSWORD: Joi.string().required(),
         ADMIN_TOKEN_SECRET: Joi.string().min(16).required(),
-        ADMIN_TOKEN_TTL_SECONDS: Joi.number().integer().min(60).default(60 * 60 * 12),
+        ADMIN_TOKEN_TTL_SECONDS: Joi.number()
+          .integer()
+          .min(60)
+          .default(60 * 60 * 12),
       }),
     }),
     ThrottlerModule.forRootAsync({
@@ -46,6 +50,7 @@ import { AdminModule } from './admin/admin.module.js';
     CentersModule,
     FormsModule,
     AdminModule,
+    AuditsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

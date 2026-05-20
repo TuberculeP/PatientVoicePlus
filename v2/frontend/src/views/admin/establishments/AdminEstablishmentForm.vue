@@ -85,7 +85,7 @@ function onSubmit() {
         required
         class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
         type="text"
-      />
+      >
     </div>
 
     <div>
@@ -99,7 +99,7 @@ function onSubmit() {
         required
         class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
         type="text"
-      />
+      >
     </div>
 
     <div class="grid sm:grid-cols-2 gap-4">
@@ -114,7 +114,7 @@ function onSubmit() {
           required
           class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
           type="text"
-        />
+        >
       </div>
       <div>
         <label
@@ -127,7 +127,7 @@ function onSubmit() {
           required
           class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
           type="text"
-        />
+        >
       </div>
     </div>
 

@@ -90,7 +90,9 @@ export class AdminCentersService {
         where: { id },
         data: {
           ...(dto.name !== undefined && { name: dto.name }),
-          ...(dto.description !== undefined && { description: dto.description }),
+          ...(dto.description !== undefined && {
+            description: dto.description,
+          }),
           ...(dto.city !== undefined && { city: dto.city }),
           ...(dto.postalCode !== undefined && { postalCode: dto.postalCode }),
           ...(dto.address !== undefined && { address: dto.address }),

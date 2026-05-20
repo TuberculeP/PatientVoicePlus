@@ -51,8 +51,9 @@ export type AdminFormDetail = {
   }[]
 }
 
-/** Un thème = une note 1–5 + un commentaire libre (une question en base) */
+/** Un thème = une note 1–5 + commentaire, ou commentaire seul si commentOnly */
 export type Theme = {
   name: string
   questionId: string
+  commentOnly?: boolean
 }

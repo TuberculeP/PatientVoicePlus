@@ -42,6 +42,7 @@ model Center {
   updatedAt   DateTime          @updatedAt
   forms       Form[]
   specialties CenterSpecialty[]
+  audits      Audit[]
 
   @@map("centers")
 }
@@ -92,4 +93,25 @@ model Answer {
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@map("answers")
+}
+
+enum AuditStatus {
+  DRAFT
+  SENT
+  DONE
+
+  @@map("audit_status")
+}
+
+model Audit {
+  id        String      @id @default(uuid()) @db.Uuid
+  centerId  String      @map("center_id") @db.Uuid
+  title     String
+  content   String
+  status    AuditStatus @default(DRAFT)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  center    Center      @relation(fields: [centerId], references: [id], onDelete: Cascade)
+
+  @@map("audits")
 }

@@ -12,5 +12,6 @@ import { AdminService } from './admin.service.js';
   imports: [PrismaModule],
   controllers: [AdminController, AdminCentersController, AdminFormsController],
   providers: [AdminService, AdminCentersService, AdminFormsService, AdminGuard],
+  exports: [AdminService, AdminGuard, AdminCentersService, AdminFormsService],
 })
 export class AdminModule {}

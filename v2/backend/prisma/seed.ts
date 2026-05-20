@@ -19,6 +19,7 @@ async function main() {
       tx.theme.create({ data: { name: 'Bien-être et sécurité' } }),
       tx.theme.create({ data: { name: 'Propreté et confort' } }),
       tx.theme.create({ data: { name: 'Alimentation' } }),
+      tx.theme.create({ data: { name: 'Autre aspect de votre expérience' } }),
     ]);
     return created;
   });
@@ -55,6 +56,11 @@ async function main() {
       {
         content: 'Votre avis global sur l’alimentation',
         themeId: themeId('Alimentation'),
+        isActive: true,
+      },
+      {
+        content: 'Un autre aspect de votre séjour que vous souhaitez partager',
+        themeId: themeId('Autre aspect de votre expérience'),
         isActive: true,
       },
     ],

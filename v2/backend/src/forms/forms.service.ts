@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { FREE_COMMENT_THEME_NAME } from './forms.constants.js';
 import { SubmitFormDto } from './dto/submit-form.dto.js';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class FormsService {
       .map((theme) => ({
         name: theme.name,
         questionId: theme.questions[0].id.toString(),
+        commentOnly: theme.name === FREE_COMMENT_THEME_NAME,
       }));
   }
 

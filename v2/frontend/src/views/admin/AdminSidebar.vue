@@ -10,6 +10,7 @@ const menuOpen = ref(false)
 
 const navItems = [
   { to: '/admin', label: 'Tableau de bord', exact: true },
+  { to: '/admin/audits', label: 'Audits' },
   { to: '/admin/establishments', label: 'Établissements', exact: false },
   { to: '/admin/returns', label: 'Retours', exact: false },
 ]
@@ -32,7 +33,7 @@ function closeMenu() {
 <template>
   <!-- Barre mobile -->
   <div
-    class="md:hidden fixed inset-x-0 top-0 z-40 bg-white border-b border-gray-200 px-4 h-14 flex items-center justify-between"
+    class="md:hidden print:hidden fixed inset-x-0 top-0 z-40 bg-white border-b border-gray-200 px-4 h-14 flex items-center justify-between"
   >
     <RouterLink
       to="/admin"
@@ -89,7 +90,7 @@ function closeMenu() {
 
   <!-- Sidebar -->
   <aside
-    class="h-full shrink-0 w-64 bg-white border-r border-gray-200 flex flex-col min-h-screen z-40
+    class="h-full shrink-0 w-64 bg-white border-r border-gray-200 flex flex-col min-h-screen z-40 print:hidden
            fixed inset-y-0 left-0 transform transition-transform duration-200 md:static md:translate-x-0"
     :class="menuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
     aria-label="Navigation administration"
