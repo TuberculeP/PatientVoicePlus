@@ -8,6 +8,8 @@ import Contact from '../views/Contact.vue'
 import FormPage from '../views/FormPage.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
 import AdminHome from '../views/admin/AdminHome.vue'
+import AdminAudits from '../views/admin/AdminAudits.vue'
+import AdminAuditDetail from '../views/admin/AdminAuditDetail.vue'
 
 const ADMIN_TOKEN_KEY = 'admin_token'
 
@@ -53,6 +55,8 @@ const router = createRouter({
       meta: { requiresAdmin: true },
       children: [
         { path: '', name: 'admin', component: AdminHome },
+        { path: 'audits', name: 'admin-audits', component: AdminAudits },
+        { path: 'audits/:id', name: 'admin-audit-detail', component: AdminAuditDetail },
       ],
     },
   ],

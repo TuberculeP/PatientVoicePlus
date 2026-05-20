@@ -9,6 +9,7 @@ const menuOpen = ref(false)
 
 const navItems = [
   { to: '/admin', label: 'Tableau de bord', exact: true },
+  { to: '/admin/audits', label: 'Audits' },
 ]
 
 async function logout() {

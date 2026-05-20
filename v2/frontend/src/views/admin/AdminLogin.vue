@@ -69,7 +69,7 @@ async function submit() {
             class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
             type="text"
             required
-          />
+          >
         </div>
 
         <div>
@@ -82,7 +82,7 @@ async function submit() {
             class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
             type="password"
             required
-          />
+          >
         </div>
 
         <p
