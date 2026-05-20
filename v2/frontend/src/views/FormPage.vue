@@ -122,13 +122,35 @@ async function submit() {
 
 <template>
   <div class="max-w-3xl mx-auto px-4 py-12">
-    <div v-if="loading" class="text-gray-500">Chargement…</div>
-    <div v-else-if="error" class="text-red-600">Une erreur est survenue.</div>
+    <div
+      v-if="loading"
+      class="text-gray-500"
+    >
+      Chargement…
+    </div>
+    <div
+      v-else-if="error"
+      class="text-red-600"
+    >
+      Une erreur est survenue.
+    </div>
 
-    <div v-else-if="submitted" class="text-center py-16">
-      <p class="text-5xl mb-4" aria-hidden="true">✓</p>
-      <h2 class="text-2xl font-bold text-teal-700 mb-2">Merci pour votre avis !</h2>
-      <p class="text-gray-500">Redirection en cours…</p>
+    <div
+      v-else-if="submitted"
+      class="text-center py-16"
+    >
+      <p
+        class="text-5xl mb-4"
+        aria-hidden="true"
+      >
+        ✓
+      </p>
+      <h2 class="text-2xl font-bold text-teal-700 mb-2">
+        Merci pour votre avis !
+      </h2>
+      <p class="text-gray-500">
+        Redirection en cours…
+      </p>
     </div>
 
     <template v-else>
@@ -139,14 +161,24 @@ async function submit() {
         ← Retour au centre
       </RouterLink>
 
-      <h1 class="text-3xl font-bold text-gray-800 mb-2">Votre avis</h1>
-      <p v-if="center" class="text-gray-500 mb-2">{{ center.name }}</p>
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">
+        Votre avis
+      </h1>
+      <p
+        v-if="center"
+        class="text-gray-500 mb-2"
+      >
+        {{ center.name }}
+      </p>
       <p class="text-sm text-gray-600 mb-8">
         Ouvrez chaque thème pour noter de 1 à 5 et, si vous le souhaitez, laisser un
         commentaire libre. Vous pouvez ne répondre qu’aux thèmes qui vous concernent.
       </p>
 
-      <form @submit.prevent="submit" class="space-y-3">
+      <form
+        class="space-y-3"
+        @submit.prevent="submit"
+      >
         <div
           v-for="theme in themes"
           :key="theme.name"
@@ -154,8 +186,8 @@ async function submit() {
         >
           <h2 class="m-0">
             <button
-              type="button"
               :id="headerId(theme.name)"
+              type="button"
               class="w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-semibold text-gray-800 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-inset"
               :aria-expanded="isOpen(theme.name)"
               :aria-controls="panelId(theme.name)"

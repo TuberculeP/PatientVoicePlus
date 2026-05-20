@@ -1,14 +1,14 @@
-import { Module } from '@nestjs/common'
-import { ConfigModule, ConfigService } from '@nestjs/config'
-import { APP_GUARD } from '@nestjs/core'
-import { ServeStaticModule } from '@nestjs/serve-static'
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
-import * as Joi from 'joi'
-import { join } from 'path'
-import { CentersModule } from './centers/centers.module.js'
-import { FormsModule } from './forms/forms.module.js'
-import { HealthController } from './health/health.controller.js'
-import { PrismaModule } from './prisma/prisma.module.js'
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import * as Joi from 'joi';
+import { join } from 'path';
+import { CentersModule } from './centers/centers.module.js';
+import { FormsModule } from './forms/forms.module.js';
+import { HealthController } from './health/health.controller.js';
+import { PrismaModule } from './prisma/prisma.module.js';
 
 @Module({
   imports: [

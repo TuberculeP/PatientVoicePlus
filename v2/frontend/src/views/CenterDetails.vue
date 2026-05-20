@@ -36,21 +36,45 @@ onMounted(async () => {
 
 <template>
   <div class="max-w-4xl mx-auto px-4 py-12">
-    <div v-if="loading" class="text-gray-500">Chargement…</div>
-    <div v-else-if="error" class="text-red-600">Centre introuvable.</div>
+    <div
+      v-if="loading"
+      class="text-gray-500"
+    >
+      Chargement…
+    </div>
+    <div
+      v-else-if="error"
+      class="text-red-600"
+    >
+      Centre introuvable.
+    </div>
 
     <template v-else-if="center">
-      <RouterLink to="/centers" class="text-sm text-teal-700 hover:underline mb-6 inline-block">
+      <RouterLink
+        to="/centers"
+        class="text-sm text-teal-700 hover:underline mb-6 inline-block"
+      >
         ← Tous les centres
       </RouterLink>
 
-      <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ center.name }}</h1>
-      <p class="text-gray-500 mb-1">{{ center.address }}</p>
-      <p class="text-gray-500 mb-6">{{ center.postalCode }} {{ center.city }}</p>
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">
+        {{ center.name }}
+      </h1>
+      <p class="text-gray-500 mb-1">
+        {{ center.address }}
+      </p>
+      <p class="text-gray-500 mb-6">
+        {{ center.postalCode }} {{ center.city }}
+      </p>
 
-      <p class="text-gray-700 mb-6 leading-relaxed">{{ center.description }}</p>
+      <p class="text-gray-700 mb-6 leading-relaxed">
+        {{ center.description }}
+      </p>
 
-      <div v-if="center.specialties?.length" class="mb-8">
+      <div
+        v-if="center.specialties?.length"
+        class="mb-8"
+      >
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
           Spécialités
         </h2>
@@ -66,7 +90,11 @@ onMounted(async () => {
       </div>
 
       <div class="h-64 rounded-xl overflow-hidden border border-gray-200 mb-8">
-        <LMap :center="mapCenter" :zoom="zoom" class="h-full w-full">
+        <LMap
+          :center="mapCenter"
+          :zoom="zoom"
+          class="h-full w-full"
+        >
           <LTileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution="© OpenStreetMap contributors"

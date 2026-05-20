@@ -1,17 +1,17 @@
-import { ValidationPipe } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
-import { NestFactory } from '@nestjs/core'
-import compression from 'compression'
-import helmet from 'helmet'
-import { AppModule } from './app.module.js'
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import compression from 'compression';
+import helmet from 'helmet';
+import { AppModule } from './app.module.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
-  const config = app.get(ConfigService)
-  const port = config.get<number>('PORT', 3000)
-  const isProd = config.get('NODE_ENV') === 'production'
+  const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService);
+  const port = config.get<number>('PORT', 3000);
+  const isProd = config.get('NODE_ENV') === 'production';
 
-  app.use(compression())
+  app.use(compression());
   app.use(
     helmet({
       contentSecurityPolicy: isProd
@@ -34,15 +34,15 @@ async function bootstrap() {
           }
         : false,
     }),
-  )
+  );
 
-  app.setGlobalPrefix('api')
+  app.setGlobalPrefix('api');
 
   app.enableCors({
     origin: isProd ? false : ['http://localhost:5173'],
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
-  })
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -50,8 +50,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
     }),
-  )
+  );
 
-  await app.listen(port)
+  await app.listen(port);
 }
-bootstrap()
+void bootstrap();

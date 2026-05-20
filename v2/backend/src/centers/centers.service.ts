@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../prisma/prisma.service.js'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class CentersService {
@@ -9,7 +9,7 @@ export class CentersService {
     return this.prisma.center.findMany({
       where: { deletedAt: null },
       orderBy: { name: 'asc' },
-    })
+    });
   }
 
   async findOne(id: string) {
@@ -20,11 +20,11 @@ export class CentersService {
           include: { specialty: true },
         },
       },
-    })
-    if (!center) return null
+    });
+    if (!center) return null;
     return {
       ...center,
       specialties: center.specialties.map((cs) => cs.specialty),
-    }
+    };
   }
 }
