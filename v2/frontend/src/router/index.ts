@@ -11,6 +11,8 @@ import AdminHome from '../views/admin/AdminHome.vue'
 import AdminEstablishmentsList from '../views/admin/establishments/AdminEstablishmentsList.vue'
 import AdminEstablishmentCreate from '../views/admin/establishments/AdminEstablishmentCreate.vue'
 import AdminEstablishmentEdit from '../views/admin/establishments/AdminEstablishmentEdit.vue'
+import AdminReturnsList from '../views/admin/returns/AdminReturnsList.vue'
+import AdminReturnDetail from '../views/admin/returns/AdminReturnDetail.vue'
 
 const ADMIN_TOKEN_KEY = 'admin_token'
 
@@ -70,6 +72,16 @@ const router = createRouter({
           path: 'establishments/:id/edit',
           name: 'admin-establishment-edit',
           component: AdminEstablishmentEdit,
+        },
+        {
+          path: 'returns',
+          name: 'admin-returns',
+          component: AdminReturnsList,
+        },
+        {
+          path: 'returns/:id',
+          name: 'admin-return-detail',
+          component: AdminReturnDetail,
         },
       ],
     },

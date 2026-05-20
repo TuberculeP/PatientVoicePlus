@@ -27,6 +27,30 @@ export type CenterFormData = {
   specialtyIds: number[]
 }
 
+export type AdminFormListItem = {
+  id: string
+  centerId: string
+  centerName: string
+  createdAt: string
+  isActive: boolean
+  answersCount: number
+  averageRating: number | null
+}
+
+export type AdminFormDetail = {
+  id: string
+  centerId: string
+  centerName: string
+  createdAt: string
+  isActive: boolean
+  answers: {
+    questionId: number
+    themeName: string
+    value: string
+    content: string | null
+  }[]
+}
+
 /** Un thème = une note 1–5 + un commentaire libre (une question en base) */
 export type Theme = {
   name: string

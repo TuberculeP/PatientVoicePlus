@@ -11,6 +11,7 @@ const menuOpen = ref(false)
 const navItems = [
   { to: '/admin', label: 'Tableau de bord', exact: true },
   { to: '/admin/establishments', label: 'Établissements', exact: false },
+  { to: '/admin/returns', label: 'Retours', exact: false },
 ]
 
 function isNavActive(item: { to: string; exact?: boolean }) {

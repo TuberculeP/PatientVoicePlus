@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import type { CenterFormData, Specialty } from '../../../types'
 import { adminFetch } from '../../../composables/useAdminApi'
 
@@ -15,6 +15,7 @@ const emit = defineEmits<{
 
 const specialties = ref<Specialty[]>([])
 const loadingSpecialties = ref(true)
+const specialtyToAdd = ref<number | ''>('')
 
 const form = ref<CenterFormData>({
   name: '',
@@ -42,13 +43,25 @@ onMounted(async () => {
   }
 })
 
-function toggleSpecialty(id: number) {
-  const ids = form.value.specialtyIds
-  if (ids.includes(id)) {
-    form.value.specialtyIds = ids.filter((x) => x !== id)
-  } else {
-    form.value.specialtyIds = [...ids, id]
+const availableSpecialties = computed(() =>
+  specialties.value.filter((s) => !form.value.specialtyIds.includes(s.id)),
+)
+
+function specialtyName(id: number) {
+  return specialties.value.find((s) => s.id === id)?.name ?? ''
+}
+
+function addSpecialty() {
+  if (specialtyToAdd.value === '') return
+  const id = Number(specialtyToAdd.value)
+  if (!form.value.specialtyIds.includes(id)) {
+    form.value.specialtyIds = [...form.value.specialtyIds, id]
   }
+  specialtyToAdd.value = ''
+}
+
+function removeSpecialty(id: number) {
+  form.value.specialtyIds = form.value.specialtyIds.filter((x) => x !== id)
 }
 
 function onSubmit() {
@@ -132,40 +145,60 @@ function onSubmit() {
       />
     </div>
 
-    <fieldset class="border-0 p-0 m-0">
-      <legend class="block text-sm font-medium text-gray-700 mb-2">
+    <div>
+      <label
+        for="specialty-select"
+        class="block text-sm font-medium text-gray-700 mb-1"
+      >
         Spécialités
-      </legend>
+      </label>
       <p
         v-if="loadingSpecialties"
         class="text-sm text-gray-500"
       >
         Chargement…
       </p>
-      <div
-        v-else
-        class="flex flex-wrap gap-2"
-      >
-        <label
-          v-for="spec in specialties"
-          :key="spec.id"
-          class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors"
-          :class="
-            form.specialtyIds.includes(spec.id)
-              ? 'border-teal-600 bg-teal-50 text-teal-800'
-              : 'border-gray-200 text-gray-700 hover:border-teal-400'
-          "
+      <template v-else>
+        <select
+          id="specialty-select"
+          v-model="specialtyToAdd"
+          :disabled="availableSpecialties.length === 0"
+          class="w-full rounded-lg border border-gray-200 pl-3 pr-10 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+          @change="addSpecialty"
         >
-          <input
-            type="checkbox"
-            class="sr-only"
-            :checked="form.specialtyIds.includes(spec.id)"
-            @change="toggleSpecialty(spec.id)"
-          />
-          {{ spec.name }}
-        </label>
-      </div>
-    </fieldset>
+          <option value="">
+            {{ availableSpecialties.length === 0 ? 'Toutes les spécialités sont sélectionnées' : 'Choisir une spécialité…' }}
+          </option>
+          <option
+            v-for="spec in availableSpecialties"
+            :key="spec.id"
+            :value="spec.id"
+          >
+            {{ spec.name }}
+          </option>
+        </select>
+        <ul
+          v-if="form.specialtyIds.length"
+          class="mt-2 flex flex-wrap gap-2"
+        >
+          <li
+            v-for="id in form.specialtyIds"
+            :key="id"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-teal-600 bg-teal-50 px-3 py-1.5 text-sm text-teal-800"
+          >
+            {{ specialtyName(id) }}
+            <button
+              type="button"
+              class="text-teal-600 hover:text-teal-900 font-semibold leading-none"
+              :aria-label="`Retirer ${specialtyName(id)}`"
+              @click="removeSpecialty(id)"
+            >
+              ×
+            </button>
+          </li>
+        </ul>
+      </template>
+    </div>
 
     <div class="flex flex-wrap gap-3 pt-2">
       <button
