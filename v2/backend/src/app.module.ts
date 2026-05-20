@@ -9,6 +9,7 @@ import { CentersModule } from './centers/centers.module.js';
 import { FormsModule } from './forms/forms.module.js';
 import { HealthController } from './health/health.controller.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { AdminModule } from './admin/admin.module.js';
 
 @Module({
   imports: [
@@ -22,6 +23,10 @@ import { PrismaModule } from './prisma/prisma.module.js';
           .default('development'),
         THROTTLE_TTL: Joi.number().default(60),
         THROTTLE_LIMIT: Joi.number().default(30),
+        ADMIN_USERNAME: Joi.string().default('admin'),
+        ADMIN_PASSWORD: Joi.string().required(),
+        ADMIN_TOKEN_SECRET: Joi.string().min(16).required(),
+        ADMIN_TOKEN_TTL_SECONDS: Joi.number().integer().min(60).default(60 * 60 * 12),
       }),
     }),
     ThrottlerModule.forRootAsync({
@@ -40,6 +45,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     PrismaModule,
     CentersModule,
     FormsModule,
+    AdminModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
