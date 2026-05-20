@@ -3,7 +3,7 @@ FROM node:22-alpine AS frontend-builder
 WORKDIR /app
 
 COPY frontend/package*.json ./
-RUN npm ci
+RUN NODE_ENV=development npm ci
 
 COPY frontend/ ./
 RUN npm run build-only
@@ -13,7 +13,7 @@ FROM node:22-alpine AS backend-builder
 WORKDIR /app
 
 COPY backend/package*.json ./
-RUN npm ci
+RUN NODE_ENV=development npm ci
 
 COPY backend/ ./
 

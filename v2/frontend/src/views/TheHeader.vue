@@ -7,8 +7,10 @@ const menuOpen = ref(false)
 <template>
   <header class="bg-white border-b border-gray-200">
     <nav class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+
       <RouterLink to="/" class="text-teal-700 font-bold text-xl tracking-tight">
        <img :src="'/logo.jpg'" alt="Logo">
+
       </RouterLink>
 
       <div class="hidden md:flex gap-6 text-sm font-medium">
@@ -41,7 +43,12 @@ const menuOpen = ref(false)
         aria-label="Menu"
         @click="menuOpen = !menuOpen"
       >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             v-if="!menuOpen"
             stroke-linecap="round"
@@ -60,14 +67,29 @@ const menuOpen = ref(false)
       </button>
     </nav>
 
-    <div v-if="menuOpen" class="md:hidden border-t border-gray-100 bg-white px-4 py-3 flex flex-col gap-3 text-sm font-medium">
-      <RouterLink to="/" class="text-gray-700 hover:text-teal-700" @click="menuOpen = false">
+    <div
+      v-if="menuOpen"
+      class="md:hidden border-t border-gray-100 bg-white px-4 py-3 flex flex-col gap-3 text-sm font-medium"
+    >
+      <RouterLink
+        to="/"
+        class="text-gray-700 hover:text-teal-700"
+        @click="menuOpen = false"
+      >
         Accueil
       </RouterLink>
-      <RouterLink to="/centers" class="text-gray-700 hover:text-teal-700" @click="menuOpen = false">
+      <RouterLink
+        to="/centers"
+        class="text-gray-700 hover:text-teal-700"
+        @click="menuOpen = false"
+      >
         Les centres
       </RouterLink>
-      <RouterLink to="/contact" class="text-gray-700 hover:text-teal-700" @click="menuOpen = false">
+      <RouterLink
+        to="/contact"
+        class="text-gray-700 hover:text-teal-700"
+        @click="menuOpen = false"
+      >
         Contact
       </RouterLink>
     </div>
