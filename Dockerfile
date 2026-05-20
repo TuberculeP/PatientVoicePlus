@@ -28,6 +28,8 @@ RUN pnpm install --filter backend --frozen-lockfile
 
 COPY backend/ ./backend/
 
+RUN pnpm --filter backend exec -- prisma generate
+
 RUN pnpm --filter backend run build
 
 # Switch to prod-only deps then regenerate prisma client
