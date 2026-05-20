@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "prisma": {
-    "seed": "sh -c 'set -a && . ../.env && set +a && ts-node prisma/seed.ts'"
+    "seed": "sh prisma/seed.sh"
   },
   "scripts": {
     "build": "nest build && tsc -p tsconfig.seed.json",

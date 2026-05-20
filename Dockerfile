@@ -17,6 +17,8 @@ RUN pnpm --filter frontend run build-only
 FROM node:22-alpine AS backend-builder
 WORKDIR /app
 
+RUN apk add --no-cache openssl
+
 RUN corepack enable
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
