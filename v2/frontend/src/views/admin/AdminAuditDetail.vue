@@ -54,6 +54,7 @@ async function fetchAudit() {
       return
     }
     audit.value = await res.json()
+    document.title = audit.value!.title
     editor.value?.commands.setContent(audit.value!.content)
   } finally {
     loading.value = false
@@ -114,6 +115,7 @@ function exportPdf() {
 onMounted(fetchAudit)
 
 onBeforeUnmount(() => {
+  document.title = 'PatientVoice'
   editor.value?.destroy()
 })
 </script>
