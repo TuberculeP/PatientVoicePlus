@@ -50,7 +50,7 @@ import { N8nModule } from './n8n/n8n.module.js';
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', 'frontend-dist'),
-      exclude: ['/api*'],
+      exclude: ['/api/{*path}'],
     }),
     PrismaModule,
     CentersModule,
