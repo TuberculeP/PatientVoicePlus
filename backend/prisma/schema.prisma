@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Theme {
+  id        Int        @id @default(autoincrement())
+  name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  questions Question[]
+
+  @@map("themes")
+}
+
+model Question {
+  id        Int      @id @default(autoincrement())
+  content   String
+  isActive  Boolean  @map("is_active")
+  themeId   Int?     @map("theme_id")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  theme     Theme?   @relation(fields: [themeId], references: [id])
+  answers   Answer[]
+
+  @@map("questions")
+}
+
+model Center {
+  id          String            @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  city        String
+  postalCode  String            @map("postal_code")
+  address     String
+  deletedAt   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  forms       Form[]
+  specialties CenterSpecialty[]
+  audits      Audit[]
+
+  @@map("centers")
+}
+
+model Specialty {
+  id        Int               @id @default(autoincrement())
+  name      String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  centers   CenterSpecialty[]
+
+  @@map("specialties")
+}
+
+model CenterSpecialty {
+  centerId    String    @map("center_id") @db.Uuid
+  specialtyId Int       @map("specialty_id")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  center      Center    @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  specialty   Specialty @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+
+  @@id([centerId, specialtyId])
+  @@map("center_specialties")
+}
+
+model Form {
+  id        String    @id @default(uuid()) @db.Uuid
+  centerId  String    @map("center_id") @db.Uuid
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  center    Center    @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  answers   Answer[]
+
+  @@map("forms")
+}
+
+model Answer {
+  id         String   @id @default(uuid()) @db.Uuid
+  formId     String   @map("form_id") @db.Uuid
+  questionId Int      @map("question_id")
+  value      String
+  content    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  form       Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("answers")
+}
+
+enum AuditStatus {
+  DRAFT
+  SENT
+  DONE
+
+  @@map("audit_status")
+}
+
+model Audit {
+  id        String      @id @default(uuid()) @db.Uuid
+  centerId  String      @map("center_id") @db.Uuid
+  title     String
+  content   String
+  status    AuditStatus @default(DRAFT)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  center    Center      @relation(fields: [centerId], references: [id], onDelete: Cascade)
+
+  @@map("audits")
+}
