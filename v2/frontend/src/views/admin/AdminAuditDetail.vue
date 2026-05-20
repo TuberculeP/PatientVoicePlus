@@ -107,6 +107,10 @@ const STATUS_ACTIVE_CLASS: Record<AuditStatus, string> = {
   DONE: 'ring-2 ring-green-500',
 }
 
+function exportPdf() {
+  window.print()
+}
+
 onMounted(fetchAudit)
 
 onBeforeUnmount(() => {
@@ -116,7 +120,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div>
-    <div class="mb-6">
+    <div class="mb-6 print:hidden">
       <RouterLink
         :to="{ name: 'admin-audits' }"
         class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-teal-700 transition-colors mb-4"
@@ -150,14 +154,23 @@ onBeforeUnmount(() => {
             {{ audit.center.name }} — {{ audit.center.city }}
           </p>
         </div>
-        <button
-          type="button"
-          :disabled="saving"
-          class="bg-teal-700 text-white font-semibold px-4 py-2 rounded-lg hover:bg-teal-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 text-sm"
-          @click="saveContent"
-        >
-          {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
-        </button>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+            @click="exportPdf"
+          >
+            Exporter en PDF
+          </button>
+          <button
+            type="button"
+            :disabled="saving"
+            class="bg-teal-700 text-white font-semibold px-4 py-2 rounded-lg hover:bg-teal-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 text-sm"
+            @click="saveContent"
+          >
+            {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
       </div>
 
       <p
@@ -180,7 +193,7 @@ onBeforeUnmount(() => {
       class="space-y-6"
     >
       <!-- Sélecteur de statut -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 print:hidden">
         <span class="text-sm font-medium text-gray-600 mr-1">Statut :</span>
         <button
           v-for="s in (['DRAFT', 'SENT', 'DONE'] as AuditStatus[])"
@@ -195,10 +208,10 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Éditeur tiptap -->
-      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden print:border-0 print:rounded-none">
         <EditorContent
           :editor="editor"
-          class="p-6"
+          class="p-6 print:p-0"
         />
       </div>
     </div>
@@ -223,4 +236,34 @@ onBeforeUnmount(() => {
 :deep(.audit-editor code) { background: #f3f4f6; border-radius: 0.25rem; padding: 0.125rem 0.375rem; font-size: 0.875em; }
 :deep(.audit-editor blockquote) { border-left: 3px solid #d1d5db; padding-left: 1rem; color: #6b7280; margin: 0.75rem 0; }
 :deep(.audit-editor hr) { border: none; border-top: 1px solid #e5e7eb; margin: 1rem 0; }
+
+@page {
+  size: A4;
+  margin: 2cm 2cm 2.5cm;
+
+  @top-left   { content: ""; }
+  @top-center { content: ""; }
+  @top-right  { content: ""; }
+  @bottom-left  { content: ""; }
+  @bottom-right { content: ""; }
+  @bottom-center {
+    content: counter(page);
+    font-size: 9pt;
+    color: #6b7280;
+  }
+}
+
+@media print {
+  :deep(.audit-editor) {
+    min-height: unset;
+    font-size: 11pt;
+    line-height: 1.6;
+    color: #000;
+  }
+  :deep(.audit-editor h1) { font-size: 18pt; page-break-after: avoid; }
+  :deep(.audit-editor h2) { font-size: 14pt; page-break-after: avoid; }
+  :deep(.audit-editor h3) { font-size: 12pt; page-break-after: avoid; }
+  :deep(.audit-editor p),
+  :deep(.audit-editor li) { orphans: 3; widows: 3; }
+}
 </style>
