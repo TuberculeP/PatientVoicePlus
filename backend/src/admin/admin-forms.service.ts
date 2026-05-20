@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { AnalysisStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 function averageRating(answers: { value: string }[]) {
@@ -18,6 +19,7 @@ function mapFormListItem(form: {
   deletedAt: Date | null;
   center: { name: string };
   answers: { value: string }[];
+  analysis: { status: AnalysisStatus } | null;
 }) {
   return {
     id: form.id,
@@ -27,6 +29,7 @@ function mapFormListItem(form: {
     isActive: form.deletedAt === null,
     answersCount: form.answers.length,
     averageRating: averageRating(form.answers),
+    analysisStatus: form.analysis?.status ?? null,
   };
 }
 
@@ -42,6 +45,7 @@ export class AdminFormsService {
         include: {
           center: true,
           answers: true,
+          analysis: { select: { status: true } },
         },
       })
       .then((forms) => forms.map(mapFormListItem));
@@ -58,6 +62,7 @@ export class AdminFormsService {
           },
           orderBy: { questionId: 'asc' },
         },
+        analysis: true,
       },
     });
     if (!form) throw new NotFoundException('Retour introuvable');
@@ -74,20 +79,31 @@ export class AdminFormsService {
         value: a.value,
         content: a.content,
       })),
+      analysis: form.analysis
+        ? {
+            status: form.analysis.status,
+            analyse: form.analysis.analyse,
+            tags: form.analysis.tags,
+            needsHumanReview: form.analysis.needsHumanReview,
+            auditLevel: form.analysis.auditLevel,
+            inQuota: form.analysis.inQuota,
+            hasPii: form.analysis.hasPii,
+          }
+        : null,
     };
   }
 
   async deactivate(id: string) {
     const existing = await this.prisma.form.findUnique({
       where: { id },
-      include: { center: true, answers: true },
+      include: { center: true, answers: true, analysis: { select: { status: true } } },
     });
     if (!existing) throw new NotFoundException('Retour introuvable');
 
     const form = await this.prisma.form.update({
       where: { id },
       data: { deletedAt: new Date() },
-      include: { center: true, answers: true },
+      include: { center: true, answers: true, analysis: { select: { status: true } } },
     });
     return mapFormListItem(form);
   }
@@ -95,14 +111,14 @@ export class AdminFormsService {
   async activate(id: string) {
     const existing = await this.prisma.form.findUnique({
       where: { id },
-      include: { center: true, answers: true },
+      include: { center: true, answers: true, analysis: { select: { status: true } } },
     });
     if (!existing) throw new NotFoundException('Retour introuvable');
 
     const form = await this.prisma.form.update({
       where: { id },
       data: { deletedAt: null },
-      include: { center: true, answers: true },
+      include: { center: true, answers: true, analysis: { select: { status: true } } },
     });
     return mapFormListItem(form);
   }

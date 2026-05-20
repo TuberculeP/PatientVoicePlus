@@ -1,11 +1,23 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { Ban, Loader2, RotateCcw } from 'lucide-vue-next'
+import { Ban, BrainCircuit, Loader2, RotateCcw } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { adminFetch } from '../../../composables/useAdminApi'
-import type { AdminFormDetail } from '../../../types'
+import type { AdminFormDetail, AnalysisStatus } from '../../../types'
+
+const ANALYSIS_LABEL: Record<AnalysisStatus, string> = {
+  PENDING: 'Analyse en cours…',
+  DONE: 'Analysé',
+  ERROR: 'Erreur lors de l\'analyse',
+}
+
+const AUDIT_LEVEL_LABEL: Record<string, string> = {
+  prioritaire: 'Audit prioritaire',
+  potentiel: 'Audit potentiel',
+  aucun: 'Pas d\'audit requis',
+}
 
 const route = useRoute()
 
@@ -157,6 +169,65 @@ onMounted(load)
         <p class="text-sm text-gray-600 mt-1">
           {{ form.answers.length }} thème(s) renseigné(s)
         </p>
+      </div>
+
+      <div
+        v-if="form.analysis"
+        class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mb-6"
+      >
+        <div class="flex items-center gap-2 mb-4">
+          <BrainCircuit class="h-5 w-5 text-teal-600" />
+          <h2 class="font-semibold text-gray-800">
+            Analyse IA
+          </h2>
+          <Badge
+            :variant="form.analysis.status === 'DONE' ? 'default' : form.analysis.status === 'ERROR' ? 'destructive' : 'secondary'"
+            class="flex items-center gap-1"
+          >
+            <Loader2
+              v-if="form.analysis.status === 'PENDING'"
+              class="h-3 w-3 animate-spin"
+            />
+            {{ ANALYSIS_LABEL[form.analysis.status] }}
+          </Badge>
+        </div>
+
+        <template v-if="form.analysis.status === 'DONE'">
+          <p
+            v-if="form.analysis.analyse"
+            class="text-sm text-gray-700 leading-relaxed mb-4"
+          >
+            {{ form.analysis.analyse }}
+          </p>
+
+          <div
+            v-if="form.analysis.tags.length"
+            class="flex flex-wrap gap-1.5 mb-4"
+          >
+            <span
+              v-for="tag in form.analysis.tags"
+              :key="tag"
+              class="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-800"
+            >
+              {{ tag }}
+            </span>
+          </div>
+
+          <div class="flex flex-wrap gap-3 text-xs text-gray-500">
+            <span v-if="form.analysis.auditLevel">
+              {{ AUDIT_LEVEL_LABEL[form.analysis.auditLevel] ?? form.analysis.auditLevel }}
+            </span>
+            <span
+              v-if="form.analysis.needsHumanReview"
+              class="text-amber-600 font-medium"
+            >
+              Relecture humaine requise
+            </span>
+            <span v-if="form.analysis.hasPii" class="text-red-600 font-medium">
+              Données personnelles détectées
+            </span>
+          </div>
+        </template>
       </div>
 
       <div class="space-y-4">

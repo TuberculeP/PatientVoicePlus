@@ -11,6 +11,7 @@ import { HealthController } from './health/health.controller.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { AdminModule } from './admin/admin.module.js';
 import { AuditsModule } from './audits/audits.module.js';
+import { N8nModule } from './n8n/n8n.module.js';
 
 @Module({
   imports: [
@@ -32,6 +33,10 @@ import { AuditsModule } from './audits/audits.module.js';
           .integer()
           .min(60)
           .default(60 * 60 * 12),
+        N8N_WEBHOOK_URL: Joi.string().uri().optional(),
+        N8N_CALLBACK_SECRET: Joi.string().min(16).optional(),
+        N8N_WEBHOOK_SECRET_KEY: Joi.string().optional(),
+        N8N_WEBHOOK_SECRET: Joi.string().optional(),
       }),
     }),
     ThrottlerModule.forRootAsync({
@@ -52,6 +57,7 @@ import { AuditsModule } from './audits/audits.module.js';
     FormsModule,
     AdminModule,
     AuditsModule,
+    N8nModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

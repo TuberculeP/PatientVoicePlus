@@ -72,13 +72,14 @@ model CenterSpecialty {
 }
 
 model Form {
-  id        String    @id @default(uuid()) @db.Uuid
-  centerId  String    @map("center_id") @db.Uuid
+  id        String       @id @default(uuid()) @db.Uuid
+  centerId  String       @map("center_id") @db.Uuid
   deletedAt DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  center    Center    @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  center    Center       @relation(fields: [centerId], references: [id], onDelete: Cascade)
   answers   Answer[]
+  analysis  FormAnalysis?
 
   @@index([centerId])
   @@map("forms")
@@ -98,6 +99,32 @@ model Answer {
   @@index([formId])
   @@index([questionId])
   @@map("answers")
+}
+
+enum AnalysisStatus {
+  PENDING
+  DONE
+  ERROR
+
+  @@map("analysis_status")
+}
+
+model FormAnalysis {
+  id               String         @id @default(uuid()) @db.Uuid
+  formId           String         @unique @map("form_id") @db.Uuid
+  status           AnalysisStatus @default(PENDING)
+  analyse          String?
+  tags             String[]
+  needsHumanReview Boolean        @default(false) @map("needs_human_review")
+  auditLevel       String?        @map("audit_level")
+  inQuota          Boolean?       @map("in_quota")
+  hasPii           Boolean?       @map("has_pii")
+  errorMessage     String?        @map("error_message")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  form             Form           @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@map("form_analyses")
 }
 
 enum AuditStatus {

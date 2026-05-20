@@ -27,6 +27,18 @@ export type CenterFormData = {
   specialtyIds: number[]
 }
 
+export type AnalysisStatus = 'PENDING' | 'DONE' | 'ERROR'
+
+export type FormAnalysis = {
+  status: AnalysisStatus
+  analyse: string | null
+  tags: string[]
+  needsHumanReview: boolean
+  auditLevel: string | null
+  inQuota: boolean | null
+  hasPii: boolean | null
+}
+
 export type AdminFormListItem = {
   id: string
   centerId: string
@@ -35,6 +47,7 @@ export type AdminFormListItem = {
   isActive: boolean
   answersCount: number
   averageRating: number | null
+  analysisStatus: AnalysisStatus | null
 }
 
 export type AdminFormDetail = {
@@ -49,6 +62,7 @@ export type AdminFormDetail = {
     value: string
     content: string | null
   }[]
+  analysis: FormAnalysis | null
 }
 
 /** Un thème = une note 1–5 + commentaire, ou commentaire seul si commentOnly */

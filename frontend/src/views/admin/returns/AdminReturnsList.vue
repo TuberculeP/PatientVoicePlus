@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowRight, Ban, Loader2, RotateCcw } from 'lucide-vue-next'
+import { ArrowRight, Ban, Loader2, RotateCcw, BrainCircuit } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
@@ -14,7 +14,13 @@ import {
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 import { adminFetch } from '../../../composables/useAdminApi'
-import type { AdminCenter, AdminFormListItem } from '../../../types'
+import type { AdminCenter, AdminFormListItem, AnalysisStatus } from '../../../types'
+
+const ANALYSIS_BADGE: Record<AnalysisStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+  PENDING: { label: 'Analyse…', variant: 'secondary' },
+  DONE: { label: 'Analysé', variant: 'default' },
+  ERROR: { label: 'Erreur IA', variant: 'destructive' },
+}
 
 const router = useRouter()
 
@@ -155,6 +161,12 @@ onMounted(async () => {
             <TableHead>Note moyenne</TableHead>
             <TableHead>Réponses</TableHead>
             <TableHead>Statut</TableHead>
+            <TableHead>
+              <span class="flex items-center gap-1">
+                <BrainCircuit class="h-3.5 w-3.5" />
+                Analyse IA
+              </span>
+            </TableHead>
             <TableHead class="text-right w-[100px]">
               Actions
             </TableHead>
@@ -190,6 +202,24 @@ onMounted(async () => {
               <Badge :variant="form.isActive ? 'default' : 'secondary'">
                 {{ form.isActive ? 'Actif' : 'Désactivé' }}
               </Badge>
+            </TableCell>
+            <TableCell>
+              <span v-if="form.analysisStatus">
+                <Badge
+                  :variant="ANALYSIS_BADGE[form.analysisStatus].variant"
+                  class="flex items-center gap-1 w-fit"
+                >
+                  <Loader2
+                    v-if="form.analysisStatus === 'PENDING'"
+                    class="h-3 w-3 animate-spin"
+                  />
+                  {{ ANALYSIS_BADGE[form.analysisStatus].label }}
+                </Badge>
+              </span>
+              <span
+                v-else
+                class="text-gray-400 text-sm"
+              >—</span>
             </TableCell>
             <TableCell
               class="text-right"
