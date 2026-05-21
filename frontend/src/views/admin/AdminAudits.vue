@@ -28,6 +28,10 @@ const loading = ref(true)
 const generating = ref(false)
 const showModal = ref(false)
 const selectedCenterId = ref('')
+const mode = ref<'manual' | 'ai'>('manual')
+const dateFrom = ref('')
+const dateTo = ref('')
+const aiSuccess = ref(false)
 const error = ref<string | null>(null)
 
 async function fetchAudits() {
@@ -49,26 +53,59 @@ async function generateAudit() {
   if (!selectedCenterId.value) return
   generating.value = true
   error.value = null
-  try {
-    const res = await adminFetch('/audits/generate', {
-      method: 'POST',
-      body: JSON.stringify({ centerId: selectedCenterId.value }),
-    })
-    if (!res.ok) {
-      error.value = 'Erreur lors de la génération.'
+
+  if (mode.value === 'ai') {
+    if (!dateFrom.value || !dateTo.value) {
+      error.value = 'Veuillez renseigner les deux dates.'
+      generating.value = false
       return
     }
-    const audit: Audit = await res.json()
-    await router.push({ name: 'admin-audit-detail', params: { id: audit.id } })
-  } catch {
-    error.value = 'Impossible de contacter le serveur.'
-  } finally {
-    generating.value = false
+    try {
+      const res = await adminFetch('/audits/generate-ai', {
+        method: 'POST',
+        body: JSON.stringify({
+          centerId: selectedCenterId.value,
+          dateFrom: dateFrom.value,
+          dateTo: dateTo.value,
+        }),
+      })
+      if (!res.ok) {
+        error.value = 'Erreur lors du déclenchement.'
+        return
+      }
+      aiSuccess.value = true
+      await fetchAudits()
+    } catch {
+      error.value = 'Impossible de contacter le serveur.'
+    } finally {
+      generating.value = false
+    }
+  } else {
+    try {
+      const res = await adminFetch('/audits/generate', {
+        method: 'POST',
+        body: JSON.stringify({ centerId: selectedCenterId.value }),
+      })
+      if (!res.ok) {
+        error.value = 'Erreur lors de la génération.'
+        return
+      }
+      const audit: Audit = await res.json()
+      await router.push({ name: 'admin-audit-detail', params: { id: audit.id } })
+    } catch {
+      error.value = 'Impossible de contacter le serveur.'
+    } finally {
+      generating.value = false
+    }
   }
 }
 
 function openModal() {
   selectedCenterId.value = ''
+  mode.value = 'manual'
+  dateFrom.value = ''
+  dateTo.value = ''
+  aiSuccess.value = false
   error.value = null
   showModal.value = true
 }
@@ -208,53 +245,124 @@ onMounted(() => {
             Générer un audit
           </h2>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Établissement
-            </label>
-            <select
-              v-model="selectedCenterId"
-              class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
-            >
-              <option
-                value=""
-                disabled
-              >
-                Sélectionner…
-              </option>
-              <option
-                v-for="c in centers"
-                :key="c.id"
-                :value="c.id"
-              >
-                {{ c.name }} — {{ c.city }}
-              </option>
-            </select>
+          <!-- Succès IA -->
+          <div
+            v-if="aiSuccess"
+            class="rounded-lg bg-teal-50 border border-teal-200 px-4 py-3 text-sm text-teal-800"
+          >
+            Génération lancée. L'audit apparaîtra dans la liste dans quelques instants.
           </div>
 
-          <p
-            v-if="error"
-            class="text-sm text-red-600"
-            role="alert"
-          >
-            {{ error }}
-          </p>
+          <template v-else>
+            <!-- Toggle mode -->
+            <div class="flex rounded-lg border border-gray-200 overflow-hidden text-sm font-medium">
+              <button
+                type="button"
+                class="flex-1 py-2 transition-colors"
+                :class="mode === 'manual' ? 'bg-teal-700 text-white' : 'text-gray-600 hover:bg-gray-50'"
+                @click="mode = 'manual'"
+              >
+                Manuel
+              </button>
+              <button
+                type="button"
+                class="flex-1 py-2 transition-colors"
+                :class="mode === 'ai' ? 'bg-teal-700 text-white' : 'text-gray-600 hover:bg-gray-50'"
+                @click="mode = 'ai'"
+              >
+                Générer par IA
+              </button>
+            </div>
 
-          <div class="flex gap-3 justify-end">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Établissement
+              </label>
+              <select
+                v-model="selectedCenterId"
+                class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+              >
+                <option
+                  value=""
+                  disabled
+                >
+                  Sélectionner…
+                </option>
+                <option
+                  v-for="c in centers"
+                  :key="c.id"
+                  :value="c.id"
+                >
+                  {{ c.name }} — {{ c.city }}
+                </option>
+              </select>
+            </div>
+
+            <template v-if="mode === 'ai'">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Du
+                  </label>
+                  <input
+                    v-model="dateFrom"
+                    type="date"
+                    class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  >
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Au
+                  </label>
+                  <input
+                    v-model="dateTo"
+                    type="date"
+                    class="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  >
+                </div>
+              </div>
+              <p class="text-xs text-gray-400">
+                Seuls les avis avec une analyse complète (statut DONE) seront inclus.
+              </p>
+            </template>
+
+            <p
+              v-if="error"
+              class="text-sm text-red-600"
+              role="alert"
+            >
+              {{ error }}
+            </p>
+
+            <div class="flex gap-3 justify-end">
+              <button
+                type="button"
+                class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                @click="showModal = false"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                :disabled="!selectedCenterId || generating"
+                class="px-4 py-2 rounded-lg bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="generateAudit"
+              >
+                {{ generating ? 'Lancement…' : (mode === 'ai' ? 'Lancer la génération' : 'Générer') }}
+              </button>
+            </div>
+          </template>
+
+          <div
+            v-if="aiSuccess"
+            class="flex justify-end"
+          >
             <button
               type="button"
               class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
               @click="showModal = false"
             >
-              Annuler
-            </button>
-            <button
-              type="button"
-              :disabled="!selectedCenterId || generating"
-              class="px-4 py-2 rounded-lg bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="generateAudit"
-            >
-              {{ generating ? 'Génération…' : 'Générer' }}
+              Fermer
             </button>
           </div>
         </div>

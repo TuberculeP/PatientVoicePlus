@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { AdminGuard } from '../admin/admin.guard.js';
 import { AuditsService } from './audits.service.js';
+import { GenerateAiAuditDto } from './dto/generate-ai-audit.dto.js';
 import { GenerateAuditDto } from './dto/generate-audit.dto.js';
 import { UpdateAuditDto } from './dto/update-audit.dto.js';
 
@@ -31,6 +32,11 @@ export class AuditsController {
   @Post('generate')
   generate(@Body() dto: GenerateAuditDto) {
     return this.audits.generate(dto);
+  }
+
+  @Post('generate-ai')
+  generateAi(@Body() dto: GenerateAiAuditDto) {
+    return this.audits.triggerAiGeneration(dto);
   }
 
   @Patch(':id')

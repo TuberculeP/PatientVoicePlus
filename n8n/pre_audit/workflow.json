@@ -1,0 +1,185 @@
+{
+  "name": "PatientVoice — Pré-audit IA",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "patientvoice-pre-audit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "patientvoice-pre-audit"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.PATIENTVOICE_API_URL }}/api/n8n/reviews",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-n8n-secret",
+              "value": "={{ $vars.PATIENTVOICE_N8N_SECRET }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "centerId",
+              "value": "={{ $json.body.centerId }}"
+            },
+            {
+              "name": "dateFrom",
+              "value": "={{ $json.body.dateFrom }}"
+            },
+            {
+              "name": "dateTo",
+              "value": "={{ $json.body.dateTo }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0002-0002-0002-000000000002",
+      "name": "Fetch Reviews",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nif (!data.total || data.total === 0) {\n  throw new Error('Aucun avis analysé trouvé pour cet établissement sur la période indiquée.');\n}\n\nconst { center, period, forms, total } = data;\n\nlet prompt = `Établissement : ${center.name}\\nPériode : ${period.from} → ${period.to}\\nNombre total d'avis : ${total}\\n\\n`;\n\nfor (const [i, f] of forms.entries()) {\n  const date = new Date(f.createdAt).toLocaleDateString('fr-FR');\n  prompt += `### Avis ${i + 1} — ${date}`;\n  if (f.averageRating !== null) prompt += ` — Note moyenne : ${f.averageRating}/5`;\n  prompt += '\\n';\n  prompt += `Analyse : ${f.analysis.analyse}\\n`;\n  prompt += `Tags : ${f.analysis.tags.join(', ')}\\n`;\n  if (f.analysis.needsHumanReview) prompt += `⚠️ Relecture humaine recommandée\\n`;\n  prompt += '\\n';\n}\n\nconst title = `Pré-audit IA — ${center.name} (${period.from} → ${period.to})`;\n\nreturn [{ json: { prompt, centerId: center.id, centerName: center.name, title } }];"
+      },
+      "id": "a1b2c3d4-0003-0003-0003-000000000003",
+      "name": "Format Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Tu es un expert en analyse qualité pour des établissements de santé. On te fournit une liste d'analyses individuelles de retours patients, déjà pré-traitées et taguées. Ton rôle est de produire un premier brouillon d'audit structuré à partir de cet ensemble d'avis.\n\nCONTEXTE :\n- Les avis ont été collectés via un formulaire patient et analysés un par un par IA (résumé factuel + tags)\n- Tu n'as pas accès au texte brut des avis, uniquement aux analyses et aux tags\n- Les tags sont volontairement génériques — les détails précis sont dans les résumés d'analyse\n\nRÈGLES STRICTES :\n\n1. Synthétise uniquement à partir des informations fournies. N'invente aucun fait absent des analyses.\n2. Reste factuel et professionnel. Ne juge pas les patients, ne prends pas parti.\n3. Identifie les patterns récurrents : un problème mentionné dans 3 avis ou plus mérite une mention explicite.\n4. Classe les axes d'amélioration par fréquence d'apparition (du plus fréquent au moins fréquent).\n5. Signale systématiquement les cas critiques (avis avec besoin-relecture-humaine, incident-signale, menace, discrimination-ressentie).\n6. Le brouillon est destiné à un responsable qualité qui le finalisera — sois clair et actionnable.\n7. Réponds UNIQUEMENT avec le contenu markdown demandé, sans texte introductif ni bloc de code.\n\nFORMAT DE SORTIE OBLIGATOIRE (markdown) :\n\n# Audit — [Nom de l'établissement]\n\n_Pré-audit généré automatiquement à partir de [N] avis — Période : [date début] → [date fin]_\n\n## Résumé général\n\n[Synthèse chiffrée : nombre total d'avis analysés, note moyenne globale si disponible, répartition des niveaux d'énervement (modéré / fort), pourcentage d'avis nécessitant une relecture humaine. 3 à 5 phrases maximum.]\n\n## Points positifs\n\n[Liste à puces des éléments positifs récurrents identifiés dans les analyses. Si aucun élément positif n'est présent, indiquer \"Aucun point positif identifié sur la période.\"]\n\n## Axes d'amélioration\n\n[Liste à puces ordonnée par fréquence décroissante. Pour chaque axe : mentionner le nombre approximatif d'avis concernés et les détails précis issus des analyses (service, type de problème, contexte). Format suggéré : \"**[Thème]** (X avis) : [description factuelle]\"]\n\n## Cas nécessitant une attention particulière\n\n[Liste des avis ayant déclenché le tag besoin-relecture-humaine ou un tag critique (incident-signale, menace, discrimination-ressentie). Pour chaque cas : date de l'avis, résumé de l'analyse, tags critiques présents. Si aucun cas critique : indiquer \"Aucun cas critique identifié sur la période.\"]\n\n## Recommandations\n\n[Liste priorisée d'actions concrètes et actionnables, issues directement des axes d'amélioration. Format : \"1. **[Action]** — [Justification courte basée sur les avis]\". Maximum 5 recommandations.]\n\n---\n\n_Ce brouillon est généré automatiquement et doit être relu et validé par un responsable qualité avant diffusion._"
+        }
+      },
+      "id": "a1b2c3d4-0004-0004-0004-000000000004",
+      "name": "Generate Audit",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "model": "mistral",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0005-0005-0005-000000000005",
+      "name": "Ollama",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [900, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.PATIENTVOICE_API_URL }}/api/n8n/audit-draft",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-n8n-secret",
+              "value": "={{ $vars.PATIENTVOICE_N8N_SECRET }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "centerId",
+              "value": "={{ $('Format Prompt').item.json.centerId }}"
+            },
+            {
+              "name": "title",
+              "value": "={{ $('Format Prompt').item.json.title }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0006-0006-0006-000000000006",
+      "name": "Create Audit Draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ audit_id: $json.id, status: $json.status }) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0007-0007-0007-000000000007",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Fetch Reviews", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Reviews": {
+      "main": [
+        [{ "node": "Format Prompt", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Prompt": {
+      "main": [
+        [{ "node": "Generate Audit", "type": "main", "index": 0 }]
+      ]
+    },
+    "Generate Audit": {
+      "main": [
+        [{ "node": "Create Audit Draft", "type": "main", "index": 0 }]
+      ]
+    },
+    "Ollama": {
+      "ai_languageModel": [
+        [{ "node": "Generate Audit", "type": "ai_languageModel", "index": 0 }]
+      ]
+    },
+    "Create Audit Draft": {
+      "main": [
+        [{ "node": "Respond", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": ""
+  },
+  "id": "patientvoice-pre-audit",
+  "tags": []
+}
